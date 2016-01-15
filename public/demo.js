@@ -1,3 +1,5 @@
+/* jslint browser: true */
+
 (function () {
     'use strict';
 
@@ -11,34 +13,26 @@
         cmClient,
         socket;
 
-    function init (str, revision, clients, serverAdapter) {
-        cm.setValue(str);
-        cmClient = new EditorClient(
-            revision, clients,
-            serverAdapter, new CodeMirrorAdapter(cm)
-        );
-
-        var userListWrapper = document.getElementById('userlist-wrapper');
-        userListWrapper.appendChild(cmClient.clientListEl);
-
-        cm.on('change', function () {
-            if (!cmClient) { return; }
-            console.log(cmClient.undoManager.canUndo(), cmClient.undoManager.canRedo());
-        });
-    }
-
-    cm = CodeMirror(document.getElementById('editor-wrapper'), {
-        lineNumbers: true,
-        lineWrapping: true,
-        mode: 'markdown',
-        readOnly: 'nocursor',
-        cursorBlinkRate: 0
-    });
-
     socket = io.connect('/');
     socket
         .on('doc', function (obj) {
-            init(obj.str, obj.revision, obj.clients, new SocketIOAdapter(socket));
+            cm = new CodeMirror(document.getElementById('editor-wrapper'), {
+                lineNumbers: true,
+                lineWrapping: true,
+                mode: 'markdown',
+                readOnly: 'nocursor',
+                cursorBlinkRate: 0,
+                value: obj.str
+            });
+
+            cmClient = new EditorClient(
+                obj.revision,
+                obj.clients,
+                new SocketIOAdapter(socket),
+                new CodeMirrorAdapter(cm)
+            );
+
+            document.getElementById('userlist-wrapper').appendChild(cmClient.clientListEl);
         })
         .on('logged_in', function () {
             var li = document.createElement('li');
@@ -50,20 +44,21 @@
         })
         .emit('login', { name: username });
 
-    // throttle socket.emit()
-    (function () {
+    // throttle/simulate latency socket.emit(), pass falsy value to disable
+    (function (interval) {
         var emit = socket.emit,
             queue = [];
 
-        socket.emit = function () {
-            queue.push(arguments);
-            return socket;
-        };
-
-        setInterval(function () {
-            if (queue.length) {
-                emit.apply(socket, queue.shift());
-            }
-        }, 50);
-    })();
+        if (interval) {
+            socket.emit = function () {
+                queue.push(arguments);
+                return socket;
+            };
+            setInterval(function () {
+                if (queue.length) {
+                    emit.apply(socket, queue.shift());
+                }
+            }, interval);
+        }
+    })(50);
 })();
