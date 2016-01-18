@@ -1,23 +1,22 @@
-/* jslint browser: true */
+/* jslint browser: true, boss: true, curly: true, eqeqeq: true, eqnull: true, expr: true,
+   immed: true, noarg: true, quotmark: single, undef: true, unused: true, sub: true
+ */
 
 (function () {
     'use strict';
 
     var EditorClient      = ot.EditorClient,
         SocketIOAdapter   = ot.SocketIOAdapter,
-        AjaxAdapter       = ot.AjaxAdapter,
         CodeMirrorAdapter = ot.CodeMirrorAdapter,
-        disabledRegex     = /(^|\s+)disabled($|\s+)/,
         username          = chance.hashtag(),
         cm,
         cmClient,
         socket;
 
-    socket = io.connect('/');
+    socket = io.connect('http://weiwei-mac:3000');
     socket
         .on('doc', function (obj) {
             cm = new CodeMirror(document.getElementById('editor-wrapper'), {
-                lineNumbers: true,
                 lineWrapping: true,
                 mode: 'markdown',
                 readOnly: 'nocursor',
@@ -36,7 +35,7 @@
         })
         .on('logged_in', function () {
             var li = document.createElement('li');
-            li.appendChild(document.createTextNode(username + " (that's you!)"));
+            li.appendChild(document.createTextNode(username + ' (that\'s you!)'));
             cmClient.clientListEl.appendChild(li);
             cmClient.serverAdapter.ownUserName = username;
 
