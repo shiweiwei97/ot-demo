@@ -9,10 +9,10 @@ var ot           = require('ot'),
     errorhandler = require('errorhandler'),
     path         = require('path'),
     express      = require('express'),
+    _            = require('lodash'),
     app          = express(),
     server       = require('http').createServer(app),
-    io           = require('socket.io')(server),
-    socketIOServer;
+    io           = require('socket.io')(server);
 
 app.use(morgan('combined'));
 app.use('/',       serveStatic(path.join(__dirname, '../../public')));
@@ -21,23 +21,26 @@ if (process.env.NODE_ENV === 'development') {
     app.use(errorhandler());
 }
 
-socketIOServer = new ot.EditorSocketIOServer(
-    '# This is a Markdown heading', [], 'demo',
-    function (socket, cb) {
-        cb(!!socket.mayEdit);
-    }
-);
-
-io.on('connection', function (socket) {
-    socketIOServer.addClient(socket);
-    socket.on('login', function (obj) {
-        if (typeof obj.name !== 'string') {
-            console.error('obj.name is not a string');
-            return;
+var docIds = ['demo01', 'demo02'];
+_.each(docIds, function (docId) {
+    var socketIOServer = new ot.EditorSocketIOServer(
+        '# This is a Markdown heading', [], docId,
+        function (socket, cb) {
+            cb(!!socket.mayEdit);
         }
-        socket.mayEdit = true;
-        socketIOServer.setName(socket, obj.name);
-        socket.emit('logged_in', {});
+    );
+
+    io.of(docId).on('connection', function (socket) {
+        socketIOServer.addClient(socket);
+        socket.on('login', function (obj) {
+            if (typeof obj.name !== 'string') {
+                console.error('obj.name is not a string');
+                return;
+            }
+            socket.mayEdit = true;
+            socketIOServer.setName(socket, obj.name);
+            socket.emit('logged_in', {});
+        });
     });
 });
 

@@ -14,11 +14,12 @@
         "url": "https://github.com/operational-transformation/ot-demo/issues"
     },
     "dependencies": {
-        "ot": "0.0.15",
-        "express": "4.x",
-        "morgan": "*",
-        "serve-static": "*",
         "errorhandler": "*",
+        "express": "4.x",
+        "lodash": "^4.0.0",
+        "morgan": "*",
+        "ot": "0.0.15",
+        "serve-static": "*",
         "socket.io": "1.4.x"
     },
     "engines": {
