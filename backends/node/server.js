@@ -9,7 +9,6 @@ var ot           = require('ot'),
     errorhandler = require('errorhandler'),
     path         = require('path'),
     express      = require('express'),
-    _            = require('lodash'),
     app          = express(),
     server       = require('http').createServer(app),
     io           = require('socket.io')(server);
@@ -21,26 +20,46 @@ if (process.env.NODE_ENV === 'development') {
     app.use(errorhandler());
 }
 
-var docIds = ['demo01', 'demo02'];
-_.each(docIds, function (docId) {
-    var socketIOServer = new ot.EditorSocketIOServer(
-        '# This is a Markdown heading', [], docId,
-        function (socket, cb) {
-            cb(!!socket.mayEdit);
-        }
-    );
+var socketIOServers = {};
 
-    io.of(docId).on('connection', function (socket) {
-        socketIOServer.addClient(socket);
-        socket.on('login', function (obj) {
-            if (typeof obj.name !== 'string') {
-                console.error('obj.name is not a string');
-                return;
-            }
-            socket.mayEdit = true;
-            socketIOServer.setName(socket, obj.name);
-            socket.emit('logged_in', {});
-        });
+io.of('/reg').on('connection', function (socketReg) {
+    console.log('/reg connected');
+
+    socketReg.on('docId', function (obj) {
+        console.log('docId received ' + obj.docId);
+
+        // create or find socketIOServer
+        var docId          = obj.docId,
+            socketIOServer = socketIOServers[docId];
+
+        if (!socketIOServer) {
+            console.log('creating socketIOServer for ' + docId);
+
+            socketIOServer = new ot.EditorSocketIOServer(
+                '# This is a Markdown heading', [], docId,
+                function (socket, cb) {
+                    cb(!!socket.mayEdit);
+                }
+            );
+
+            io.of(docId).on('connection', function (socket) {
+                socketIOServer.addClient(socket);
+                socket.on('login', function (obj) {
+                    if (typeof obj.name !== 'string') {
+                        console.error('obj.name is not a string');
+                        return;
+                    }
+                    socket.mayEdit = true;
+                    socketIOServer.setName(socket, obj.name);
+                    socket.emit('logged_in', {});
+                });
+            });
+
+            socketIOServers[docId] = socketIOServer;
+        }
+
+        console.log('emit reg_ok event for ' + docId);
+        socketReg.emit('reg_ok', { docId: docId });
     });
 });
 

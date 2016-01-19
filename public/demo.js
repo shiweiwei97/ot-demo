@@ -5,19 +5,31 @@
 (function () {
     'use strict';
 
-    var EditorClient      = ot.EditorClient,
-        SocketIOAdapter   = ot.SocketIOAdapter,
-        CodeMirrorAdapter = ot.CodeMirrorAdapter;
+    function throttleSocket (socket, interval) {
+        var emit = socket.emit,
+            queue = [];
 
-    var docIds = ['demo01', 'demo02'];
-    docIds.forEach(function (docId) {
+        if (interval) {
+            socket.emit = function () {
+                queue.push(arguments);
+                return socket;
+            };
+            setInterval(function () {
+                if (queue.length) {
+                    emit.apply(socket, queue.shift());
+                }
+            }, interval);
+        }
+    }
+
+    function initEditor (docId) {
         var socket   = io.connect('http://weiwei-mac:3000/' + docId),
             username = chance.hashtag(),
             cm,
             cmClient;
         socket
             .on('doc', function (obj) {
-                cm = new CodeMirror(document.getElementById('editor-wrapper-' + docId), {
+                cm = new CodeMirror(document.getElementById(docId), {
                     lineWrapping: true,
                     mode: 'markdown',
                     readOnly: 'nocursor',
@@ -45,22 +57,26 @@
             .emit('login', { name: username });
 
         // throttle/simulate latency socket.emit(), pass falsy value to disable
-        (function (interval) {
-            var emit = socket.emit,
-                queue = [];
+        throttleSocket(socket, 50);
+    }
 
-            if (interval) {
-                socket.emit = function () {
-                    queue.push(arguments);
-                    return socket;
-                };
-                setInterval(function () {
-                    if (queue.length) {
-                        emit.apply(socket, queue.shift());
-                    }
-                }, interval);
-            }
-        })(50);
+    var EditorClient      = ot.EditorClient,
+        SocketIOAdapter   = ot.SocketIOAdapter,
+        CodeMirrorAdapter = ot.CodeMirrorAdapter,
+        editors,
+        i,
+        len;
+
+    var socketReg = io.connect('http://weiwei-mac:3000/reg');
+    socketReg.on('reg_ok', function (obj) {
+        console.log('received reg_ok: ' + obj.docId);
+        initEditor(obj.docId);
     });
 
+    editors = document.querySelectorAll('.editor-wrapper');
+    len = editors.length;
+    for (i = 0; i < len; i++) {
+        // hook up all editors, each as an individual doc
+        socketReg.emit('docId', { docId: editors[i].id });
+    }
 })();
