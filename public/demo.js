@@ -23,7 +23,7 @@
     }
 
     function initEditor (docId) {
-        var socket   = io.connect('http://weiwei-mac:3000/' + docId),
+        var socket   = io.connect(SOCKET_URL + docId),
             username = chance.hashtag(),
             cm,
             cmClient;
@@ -63,11 +63,13 @@
     var EditorClient      = ot.EditorClient,
         SocketIOAdapter   = ot.SocketIOAdapter,
         CodeMirrorAdapter = ot.CodeMirrorAdapter,
+        SOCKET_URL        = 'http://localhost:3000/',
         editors,
         i,
-        len;
+        len,
+        socketReg;
 
-    var socketReg = io.connect('http://weiwei-mac:3000/reg');
+    socketReg = io.connect(SOCKET_URL + 'reg');
     socketReg.on('reg_ok', function (obj) {
         console.log('received reg_ok: ' + obj.docId);
         initEditor(obj.docId);
