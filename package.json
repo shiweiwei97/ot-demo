@@ -17,6 +17,7 @@
         "url": "https://github.com/operational-transformation/ot-demo/issues"
     },
     "dependencies": {
+        "async-polling": "^0.2.1",
         "errorhandler": "*",
         "express": "4.x",
         "lodash": "^4.0.0",

@@ -3,7 +3,8 @@
 */
 'use strict';
 
-var ot           = require('ot'),
+var fs           = require('fs'),
+    ot           = require('ot'),
     morgan       = require('morgan'),
     serveStatic  = require('serve-static'),
     errorhandler = require('errorhandler'),
@@ -11,7 +12,8 @@ var ot           = require('ot'),
     express      = require('express'),
     app          = express(),
     server       = require('http').createServer(app),
-    io           = require('socket.io')(server);
+    io           = require('socket.io')(server),
+    AsyncPolling = require('async-polling');
 
 app.use(morgan('combined'));
 app.use('/',       serveStatic(path.join(__dirname, '../../public')));
@@ -20,7 +22,10 @@ if (process.env.NODE_ENV === 'development') {
     app.use(errorhandler());
 }
 
-var socketIOServers = {};
+var socketIOServers = {},
+    pptData = { },
+    pptDataDirty = false,
+    dataFile = 'data.json';
 
 io.of('/reg').on('connection', function (socketReg) {
     console.log('/reg connected');
@@ -35,12 +40,16 @@ io.of('/reg').on('connection', function (socketReg) {
         if (!socketIOServer) {
             console.log('creating socketIOServer for ' + docId);
 
+            var initDoc = '# This is a Markdown heading';
+
             socketIOServer = new ot.EditorSocketIOServer(
-                '# This is a Markdown heading', [], docId,
+                initDoc, [], docId,
                 function (socket, cb) {
                     cb(!!socket.mayEdit);
                 }
             );
+            pptData[docId] = initDoc;
+            pptDataDirty = true;
 
             io.of(docId).on('connection', function (socket) {
                 socketIOServer.addClient(socket);
@@ -57,6 +66,8 @@ io.of('/reg').on('connection', function (socketReg) {
                 console.log('registering docUpdate: ' + docId);
                 socket.on('docUpdate', function (obj) {
                     console.log('docUpdate: ' + JSON.stringify(obj));
+                    pptData[docId] = obj.newDocument;
+                    pptDataDirty = true;
                 });
             });
 
@@ -67,6 +78,35 @@ io.of('/reg').on('connection', function (socketReg) {
         socketReg.emit('reg_ok', { docId: docId });
     });
 });
+
+// save on dirty
+AsyncPolling(function (end) {
+    saveData();
+
+    end();
+}, 2000).run();
+
+// force save
+AsyncPolling(function (end) {
+    saveData(true);
+
+    end();
+}, 30000).run();
+
+function saveData(isForce) {
+    if (isForce || pptDataDirty) {
+        console.log('saving data: ' + JSON.stringify(pptData));
+        pptDataDirty = false;
+
+        fs.writeFile(dataFile, JSON.stringify(pptData), function(err) {
+            if (err) {
+                return console.log(err);
+            }
+
+            console.log('data saved!');
+        });
+    }
+}
 
 var port = process.env.PORT || 3000;
 server.listen(port, function () {
