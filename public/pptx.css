@@ -1,11 +1,32 @@
 .CodeMirror {
-    width: 600px;
-    height: 400px;
+    width: 860px;
     border: 1px solid #eee;
+}
+
+.CodeMirror-focused {
+    border: 1px solid red;
+}
+
+#title .CodeMirror {
+    height: 80px;
+}
+
+#content .CodeMirror {
+    height: 320px;
 }
 
 #wrapper .row {
     margin: 8px 0;
+}
+
+#wrapper {
+    border: 1px solid red;
+    width: 960px;
+    height: 540px;
+    position: relative;
+    top: 50px;
+    left: 50px;
+    padding: 20px 0 0 50px;
 }
 
 .editor-wrapper {
@@ -33,4 +54,19 @@
 
 #wrapper h3 {
     margin: 15px 5px;
+}
+
+#title, #content {
+    font-family: Calibri Light;
+}
+
+#title {
+    font-size: 44px;
+    height: 80px;
+    width: 800px;
+}
+
+#content {
+    font-size: 28px;
+    margin-top: 50px;
 }
