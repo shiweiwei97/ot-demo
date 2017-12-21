@@ -10,6 +10,9 @@
         "type": "git",
         "url": "https://github.com/operational-transformation/ot-demo"
     },
+    "scripts": {
+        "start": "node backends/node/server.js"
+    },
     "bugs": {
         "url": "https://github.com/operational-transformation/ot-demo/issues"
     },

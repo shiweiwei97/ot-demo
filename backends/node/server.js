@@ -53,6 +53,11 @@ io.of('/reg').on('connection', function (socketReg) {
                     socketIOServer.setName(socket, obj.name);
                     socket.emit('logged_in', {});
                 });
+
+                console.log('registering docUpdate: ' + docId);
+                socket.on('docUpdate', function (obj) {
+                    console.log('docUpdate: ' + JSON.stringify(obj));
+                });
             });
 
             socketIOServers[docId] = socketIOServer;

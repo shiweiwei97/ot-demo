@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Collaborative editing with CodeMirror</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="/static/bower_components/codemirror/lib/codemirror.css" />
+  <link rel="stylesheet" href="/static/pptx.css" />
+</head>
+
+<body>
+  <div class="container" id="wrapper">
+    <div class="row">
+      <h3>id: title</h3>
+      <div class="col-sm-7 editor-wrapper" id="title">
+      </div>
+      <div class="col-sm-3">
+        <div class="well userlist-wrapper" id="userlist-wrapper-title">
+          <h2>Users</h2>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <h3>id: content</h3>
+      <div class="col-sm-7 editor-wrapper" id="content">
+      </div>
+      <div class="col-sm-3">
+        <div class="well userlist-wrapper" id="userlist-wrapper-content">
+          <h2>Users</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/bower_components/codemirror/lib/codemirror.js"></script>
+  <script src="/static/bower_components/codemirror/mode/xml/xml.js"></script>
+  <script src="/static/bower_components/codemirror/mode/markdown/markdown.js"></script>
+  <script src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="/static/bower_components/socket.io-client/socket.io.js"></script>
+  <script src="/static/bower_components/chance/chance.js"></script>
+  <script src="/static/ot.js"></script>
+  <script src="/static/pptx.js"></script>
+</body>
+
+</html>
