@@ -23,7 +23,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 var socketIOServers = {},
-    pptData = { },
+    pptData = { title: 'Hello World!', content: 'Type some content here...' },
     pptDataDirty = false,
     dataFile = 'data.json';
 
@@ -40,7 +40,7 @@ io.of('/reg').on('connection', function (socketReg) {
         if (!socketIOServer) {
             console.log('creating socketIOServer for ' + docId);
 
-            var initDoc = '# This is a Markdown heading';
+            var initDoc = pptData[docId];
 
             socketIOServer = new ot.EditorSocketIOServer(
                 initDoc, [], docId,
