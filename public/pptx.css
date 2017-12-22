@@ -73,3 +73,9 @@
     font-size: 28px;
     margin-top: 50px;
 }
+
+#download {
+    position: relative;
+    top: 100px;
+    left: 150px;
+}

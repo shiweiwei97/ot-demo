@@ -22,6 +22,11 @@ if (process.env.NODE_ENV === 'development') {
     app.use(errorhandler());
 }
 
+app.get('/download', function(req, res) {
+    var file = __dirname + '../../../test.pptx';
+    res.download(file);
+});
+
 var socketIOServers = {},
     pptData = { title: 'Hello World!', content: 'Type some content here...' },
     pptDataDirty = false,
